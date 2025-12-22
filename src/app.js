@@ -201,7 +201,7 @@ async function processSingle(item) {
 function createImageCard(item) {
     const card = document.createElement('div');
     card.id = `card-${item.id}`;
-    card.className = 'bg-white md:h-[130px] rounded-xl shadow-card border border-gray-100 overflow-hidden';
+    card.className = 'bg-white md:h-[140px] rounded-xl shadow-card border border-gray-100 overflow-hidden';
     card.innerHTML = `
         <div class="flex flex-wrap h-full">
             <div class="w-full md:w-auto h-full flex border-b border-gray-100">
@@ -249,7 +249,7 @@ async function processQueue() {
             updateStatus(item.id, `<strong>${i18n.t('info.size')}：</strong>${item.originalImg.width} × ${item.originalImg.height} px<br>
             <strong>${i18n.t('info.watermark')}：</strong>${watermarkInfo.size}×${watermarkInfo.size} px<br>
             <strong>${i18n.t('info.position')}：</strong>(${watermarkInfo.position.x}, ${watermarkInfo.position.y})<br>
-            <strong class="text-[10px] md:text-sm ${is_google && is_original ? 'hidden' : 'text-warn'}">${originalStatus}</strong>`, true);
+            <span class="mt-1 text-[10px] md:text-sm ${is_google && is_original ? 'hidden' : 'text-warn'}">${originalStatus}</span>`, true);
 
             const downloadBtn = document.getElementById(`download-${item.id}`);
             downloadBtn.classList.remove('hidden');
