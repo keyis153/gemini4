@@ -39,5 +39,8 @@
   "info.watermark": "Detected Watermark",
   "info.position": "Position",
   "info.status": "Status",
-  "info.removed": "Watermark Removed"
+  "info.removed": "Watermark Removed",
+  "original.not_gemini": "⚠️ Image may not be made with Gemini. Lossless restoration unavailable.",
+  "original.not_original": "⚠️ Image may not be original size. Lossless restoration unavailable.",
+  "original.pass": "✅ Image made with Gemini. Lossless restoration supported."
 }

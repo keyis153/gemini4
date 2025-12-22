@@ -1,6 +1,7 @@
 import { WatermarkEngine } from './core/watermarkEngine.js';
 import i18n from './i18n.js';
 import JSZip from 'jszip';
+import exifr from 'exifr';
 
 // global state
 let engine = null;
@@ -92,6 +93,26 @@ function reset() {
     fileInput.value = '';
 }
 
+async function checkOriginal(file) {
+    try {
+        const exif = await exifr.parse(file, { xmp: true });
+        return {
+            is_google: exif?.Credit === 'Made with Google AI',
+            is_original: ['ImageWidth', 'ImageHeight'].every(key => exif?.[key])
+        }
+    } catch {
+        return { is_google: false, is_original: false };
+    }
+}
+
+function setStatusMessage(message = '', type = '') {
+    statusMessage.textContent = message;
+    statusMessage.style.display = message ? 'block' : 'none';
+    const colorMap = { warn: 'text-warn', success: 'text-success' };
+    statusMessage.classList.remove(...Object.values(colorMap));
+    if (colorMap[type]) statusMessage.classList.add(colorMap[type]);
+}
+
 function handleFileSelect(e) {
     handleFiles(Array.from(e.target.files));
 }
@@ -131,16 +152,25 @@ function handleFiles(files) {
     }
 }
 
+function getOriginalStatus({ is_google, is_original }) {
+    if (!is_google) return i18n.t('original.not_gemini');
+    if (!is_original) return i18n.t('original.not_original');
+    return '';
+}
+
 async function processSingle(item) {
     try {
         const img = await loadImage(item.file);
         item.originalImg = img;
 
+        const { is_google, is_original } = await checkOriginal(item.file);
+        const status = getOriginalStatus({ is_google, is_original });
+        setStatusMessage(status, is_google && is_original ? 'success' : 'warn');
+
         originalCanvas.width = img.width;
         originalCanvas.height = img.height;
         originalCanvas.getContext('2d').drawImage(img, 0, 0);
 
-        // update original image info
         const watermarkInfo = engine.getWatermarkInfo(img.width, img.height);
         originalInfo.innerHTML = `
             <strong>${i18n.t('info.size')}：</strong>${img.width} × ${img.height} px<br>
@@ -173,18 +203,18 @@ function createImageCard(item) {
     card.id = `card-${item.id}`;
     card.className = 'bg-white md:h-[130px] rounded-xl shadow-card border border-gray-100 overflow-hidden';
     card.innerHTML = `
-        <div class="flex flex-wrap h-full relative">
-            <div class="w-full md:w-auto h-full flex">
+        <div class="flex flex-wrap h-full">
+            <div class="w-full md:w-auto h-full flex border-b border-gray-100">
                 <div class="w-24 md:w-48 flex-shrink-0 bg-gray-50 p-2 flex items-center justify-center">
-                    <img id="result-${item.id}" class="max-w-full max-h-full rounded"></img>
+                    <img id="result-${item.id}" class="max-w-full max-h-24 md:max-h-full rounded"></img>
                 </div>
                 <div class="flex-1 p-4 flex flex-col min-w-0">
-                    <h4 class="font-semibold text-gray-900 mb-2 truncate">${item.name}</h4>
+                    <h4 class="font-semibold text-sm text-gray-900 mb-2 truncate">${item.name}</h4>
                     <div class="text-xs text-gray-500" id="status-${item.id}">${i18n.t('status.pending')}</div>
                 </div>
             </div>
-            <div class="absolute bottom-0 right-0 md:static w-auto ml-auto flex-shrink-0 p-2 md:p-4 flex items-center justify-center">
-                <button id="download-${item.id}" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm hidden">${i18n.t('btn.download')}</button>
+            <div class="w-full md:w-auto ml-auto flex-shrink-0 p-2 md:p-4 flex items-center justify-center">
+                <button id="download-${item.id}" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-xs md:text-sm hidden">${i18n.t('btn.download')}</button>
             </div>
         </div>
     `;
@@ -213,9 +243,13 @@ async function processQueue() {
 
             item.status = 'completed';
             const watermarkInfo = engine.getWatermarkInfo(item.originalImg.width, item.originalImg.height);
+            const { is_google, is_original } = await checkOriginal(item.originalImg);
+            const originalStatus = getOriginalStatus({ is_google, is_original });
+
             updateStatus(item.id, `<strong>${i18n.t('info.size')}：</strong>${item.originalImg.width} × ${item.originalImg.height} px<br>
             <strong>${i18n.t('info.watermark')}：</strong>${watermarkInfo.size}×${watermarkInfo.size} px<br>
-            <strong>${i18n.t('info.position')}：</strong>(${watermarkInfo.position.x}, ${watermarkInfo.position.y})`, true);
+            <strong>${i18n.t('info.position')}：</strong>(${watermarkInfo.position.x}, ${watermarkInfo.position.y})<br>
+            <strong class="text-[10px] md:text-sm ${is_google && is_original ? 'hidden' : 'text-warn'}">${originalStatus}</strong>`, true);
 
             const downloadBtn = document.getElementById(`download-${item.id}`);
             downloadBtn.classList.remove('hidden');
