@@ -21,7 +21,7 @@ const loadImage = (src) => new Promise((resolve, reject) => {
 const canvasToBlob = (canvas, type = 'image/png') =>
   new Promise(resolve => canvas.toBlob(resolve, type));
 
-const isValidGeminiImage = (img) => img.closest('model-response,.generated-image-container') !== null;
+const isValidGeminiImage = (img) => img.closest('generated-image,.generated-image-container') !== null;
 
 const findGeminiImages = () =>
   [...document.querySelectorAll('img[src*="googleusercontent.com"]')].filter(isValidGeminiImage);
