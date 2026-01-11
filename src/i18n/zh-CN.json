@@ -1,6 +1,6 @@
 {
-  "title": "Gemini Watermark Remover - Gemini 无损去水印工具",
-  "header.title": "Gemini Watermark Remover",
+  "title": "Gemini 无损去水印工具",
+  "header.title": "Gemini 图片去水印",
   "nav.userscript": "安装油猴脚本",
   "nav.principle": "去水印原理",
   "main.title": "Gemini AI 图像去水印",
@@ -28,7 +28,7 @@
   "footer.links": "链接",
   "footer.terms": "使用条款",
   "footer.tech": "技术",
-  "footer.copyright": "© 2025 Gemini Watermark Remover. All rights reserved.",
+  "footer.copyright": "© 2026 Gemini",
   "loading.text": "正在处理...",
   "status.loading": "正在加载资源...",
   "status.pending": "等待处理...",
